@@ -1,19 +1,6 @@
 from flask import abort, Blueprint, jsonify, request
 
-POSTS = [
-    {
-        "id": 1,
-        "title": "The first post",
-        "author_id": 1,
-        "content": "Content of the first post",
-    },
-    {
-        "id": 2,
-        "title": "The second post",
-        "author_id": 2,
-        "content": "Content of the second post",
-    },
-]
+from . import services
 
 bp = Blueprint("posts", __name__)
 
@@ -22,35 +9,20 @@ bp = Blueprint("posts", __name__)
 def posts():
     global POSTS
     if request.method == "GET":
-        return jsonify(POSTS)
+        return services.posts_get(request)
 
     if request.method == "POST":
-        new_post = request.json
-        POSTS.append(new_post)
-        return "", 201
+        return services.posts_post(request)
 
 
 @bp.route("/posts/<id>", methods=("GET", "PUT", "DELETE"))
 def posts_id(id: str):
     global POSTS
     if request.method == "GET":
-        try:
-            post = next(filter(lambda p: str(p["id"]) == id, POSTS))
-        except StopIteration:
-            abort(404)
-        return jsonify(post)
+        return services.posts_id_get(id, request)
 
     if request.method == "PUT":
-        try:
-            post = next(filter(lambda p: str(p["id"]) == id, POSTS))
-        except StopIteration:
-            abort(404)
-
-        for key, value in request.json.items():
-            post[key] = value
-
-        return "", 204
+        return services.posts_id_put(id, request)
 
     if request.method == "DELETE":
-        POSTS = list(filter(lambda p: str(p["id"]) != id, POSTS))
-        return "", 204
+        return services.posts_id_delete(id, request)
