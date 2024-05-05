@@ -26,6 +26,10 @@ def create_app():
 
     app.register_blueprint(posts_bp)
 
+    from app.domains.users import bp as users_bp
+
+    app.register_blueprint(users_bp)
+
     from app.domains.error import bp as error_bp
 
     app.register_blueprint(error_bp)
