@@ -1,4 +1,4 @@
-from flask import abort, Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from . import services
 
@@ -7,7 +7,6 @@ bp = Blueprint("posts", __name__)
 
 @bp.route("/posts", methods=("GET", "POST"))
 def posts():
-    global POSTS
     if request.method == "GET":
         return services.posts_get(request)
 
@@ -17,7 +16,6 @@ def posts():
 
 @bp.route("/posts/<id>", methods=("GET", "PUT", "DELETE"))
 def posts_id(id: str):
-    global POSTS
     if request.method == "GET":
         return services.posts_id_get(id, request)
 
