@@ -15,6 +15,13 @@ class Config(object):
         "STD_ERROR_MSG", "Internal server error. Please contact support."
     )
 
+    # SQLAlchemy:
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        "DATABASE_URI", "sqlite:///" + os.path.join(BASEDIR, "app.db")
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 
 class DevelopmentConfig(Config):
     ENV = "development"
