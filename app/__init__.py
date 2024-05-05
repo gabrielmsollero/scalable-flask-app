@@ -26,4 +26,8 @@ def create_app():
 
     app.register_blueprint(posts_bp)
 
+    from app.domains.error import bp as error_bp
+
+    app.register_blueprint(error_bp)
+
     return app
