@@ -2,6 +2,7 @@ from config import ENV_CONFIGS
 from flask import Flask
 import os
 
+
 def create_app():
     app = Flask(__name__)
 
@@ -11,14 +12,8 @@ def create_app():
     config_obj = ENV_CONFIGS.get(environment) or ENV_CONFIGS["production"]
     app.config.from_object(config_obj)
 
-    # from api.routes import blueprint
-    # app.register_blueprint(blueprint ,url_prefix="/")
+    from app.domains.posts import bp as posts_bp
 
-    # from api.routes.iam import iam_blueprint
-    # app.register_blueprint(iam_blueprint, url_prefix='/iam')
-
-    @app.route("/")
-    def index():
-        return "<h1>It works!!!</h1>"
+    app.register_blueprint(posts_bp)
 
     return app
