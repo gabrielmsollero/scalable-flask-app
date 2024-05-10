@@ -1,6 +1,8 @@
 # A scalable flask app template
 Basic Flask application with a folder structure ready for scaling, and a few domain examples to clarify how new features should be added.
 
+I posted an article on Medium where I cover the whole process of getting to this final structure. You can find it [here](https://medium.com/@gabrielsollero/domain-driven-design-in-practice-the-train-of-thought-behind-a-scalable-rest-api-with-flask-8904e9017ae9). Hope you like it!
+
 ## How to run
 In the first run, I recommend you create a virtual environment and install the dependencies from `requirements.txt`. This can be achieved by running the following, from the project's root folder:
 
