@@ -23,6 +23,8 @@ RUN apt-get clean \
 
 FROM base AS development
 
+ENV ENVIRONMENT=development
+
 COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt --src /usr/local/src \
@@ -39,6 +41,8 @@ CMD [ "flask", "run", "--host", "0.0.0.0", "--port", "80", "--debug" ]
 
 FROM development AS test
 
+ENV ENVIRONMENT=test
+
 COPY config.py main.py ./
 COPY app app
 COPY tests tests
@@ -48,6 +52,8 @@ CMD [ "python", "-m", "pytest" ]
 ####################### PROD IMAGE #######################
 
 FROM base AS production
+
+ENV ENVIRONMENT=production
 
 EXPOSE 80
 

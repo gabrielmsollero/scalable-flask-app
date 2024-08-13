@@ -36,12 +36,12 @@ class TestingConfig(Config):
 
 class EnvConfigs(TypedDict):
     development: Type[Config]
-    testing: Type[Config]
+    test: Type[Config]
     production: Type[Config]
 
 
 ENV_CONFIGS: EnvConfigs = {
     "development": DevelopmentConfig,
-    "testing": TestingConfig,
+    "test": TestingConfig,
     "production": Config,
 }
