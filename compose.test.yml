@@ -1,0 +1,7 @@
+services:
+  app:
+    extends:
+      file: compose.yml
+      service: app
+    build:
+      target: test
