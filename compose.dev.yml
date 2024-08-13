@@ -6,4 +6,4 @@ services:
     build:
       target: development
     volumes:
-      - ./:/srv/reef-api/
+      - ./:/home/python/app/

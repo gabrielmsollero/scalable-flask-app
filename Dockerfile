@@ -1,36 +1,40 @@
-# Three RUN commands for better layer reusage. Package installations can be
-# cached if no package dependencies are added, and pip installations too as
-# long as requirements.txt remains unchanged.
-
-# Reminder: If any new packages are installed in the first RUN with apt-get,
-# they must be removed in the second one.
-
-####################### BASE IMAGE #######################
-
 FROM python:3.11-slim AS base
-
-WORKDIR /srv/reef-api
 
 RUN apt-get clean \
     && apt-get -y update \
     && apt-get -y install \
     build-essential \
-    nginx=1.22.* \
     python3-dev=3.11.* \
     && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd --gid 1000 python && \
+    useradd --uid 1000 --gid python --shell /bin/bash --create-home python
+
+USER python
+
+WORKDIR /home/python/app
+
+ENV PATH=/home/python/.local/bin:$PATH
+ENV PYTHONPATH=/home/python/.local/lib/python3.11/site-packages:$PYTHONPATH
+
+FROM base AS base-development
+
+COPY --chown=python:python requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM base AS base-production
+
+COPY --chown=python:python deployment/prod.requirements.txt requirements.txt
+
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install uwsgi==2.0.23 --src /usr/local/src
 
 ####################### DEV IMAGE ########################
 
 FROM base AS development
 
-ENV ENVIRONMENT=development
-
-COPY requirements.txt requirements.txt
-
-RUN pip install -r requirements.txt --src /usr/local/src \
-    && apt-get -y remove \
-    build-essential \
-    python3-dev
+COPY --from=base-development /home/python/.local /home/python/.local
 
 # source code is not copied because it is supposed to be
 # bind mounted as a volume.
@@ -57,19 +61,27 @@ ENV ENVIRONMENT=production
 
 EXPOSE 80
 
-COPY deployment/prod.requirements.txt requirements.txt
+USER root
 
-RUN pip install -r requirements.txt --src /usr/local/src \
-    && pip install uwsgi==2.0.23 --src /usr/local/src \
-    && apt-get -y remove \
-    build-essential \
-    python3-dev
+RUN apt-get clean \
+    && apt-get -y update \
+    && apt-get -y install nginx=1.22.* sudo \
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "python ALL=(ALL) NOPASSWD: /usr/sbin/service nginx start" \
+    >> /etc/sudoers
 
-COPY config.py main.py ./
-COPY deployment deployment
-COPY app app
+USER python
+
+COPY --from=base-production /home/python/.local /home/python/.local
+COPY --chown=python:python config.py main.py ./
+COPY --chown=python:python deployment deployment
+COPY --chown=python:python app app
+
+USER root
 
 RUN mv ./deployment/nginx.conf /etc/nginx/ \
     && chmod +x ./deployment/start.sh
+
+USER python
 
 CMD [ "./deployment/start.sh" ]
