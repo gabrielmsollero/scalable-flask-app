@@ -1,11 +1,8 @@
+######################## BASE IMAGE #######################
+
 FROM python:3.11-slim AS base
 
-RUN apt-get clean \
-    && apt-get -y update \
-    && apt-get -y install \
-    build-essential \
-    python3-dev=3.11.* \
-    && rm -rf /var/lib/apt/lists/*
+EXPOSE 80
 
 RUN groupadd --gid 1000 python && \
     useradd --uid 1000 --gid python --shell /bin/bash --create-home python
@@ -17,13 +14,32 @@ WORKDIR /home/python/app
 ENV PATH=/home/python/.local/bin:$PATH
 ENV PYTHONPATH=/home/python/.local/lib/python3.11/site-packages:$PYTHONPATH
 
-FROM base AS base-development
+################## BASE IMAGE W/ APT PKGS #################
+
+FROM base AS base-with-apt-packages
+
+USER root
+
+RUN apt-get clean \
+    && apt-get -y update \
+    && apt-get -y install \
+    build-essential \
+    python3-dev=3.11.* \
+    && rm -rf /var/lib/apt/lists/*
+
+USER python
+
+###################### BASE-DEV IMAGE #####################
+
+FROM base-with-apt-packages AS base-development
 
 COPY --chown=python:python requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-FROM base AS base-production
+###################### BASE-PROD IMAGE ####################
+
+FROM base-with-apt-packages AS base-production
 
 COPY --chown=python:python deployment/prod.requirements.txt requirements.txt
 
@@ -58,8 +74,6 @@ CMD [ "python", "-m", "pytest" ]
 FROM base AS production
 
 ENV ENVIRONMENT=production
-
-EXPOSE 80
 
 USER root
 
